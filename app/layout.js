@@ -1,3 +1,4 @@
+import './globals.css';
 export const metadata = {
   title: 'TikTok Downloader No Watermark',
   description: 'Unduh video TikTok tanpa watermark gratis',
