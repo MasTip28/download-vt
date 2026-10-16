@@ -30,8 +30,10 @@ export async function GET(request) {
       headers: { 'User-Agent': 'com.ss.android.ugc.trill/494+ (Linux; U; Android 12; en_US; OpenData)' }
     });
 
-    const awemeList = apiResponse.data?.aweme_list?.[0];
-    const cleanVideoUrl = awemeList?.video?.play_addr?.url_list?.[0];
+    const awemeList = apiResponse.data?.aweme_list;
+    if (!awemeList || awemeList.length === 0) throw new Error('Video tidak ditemukan atau berstatus privat.');
+
+    const cleanVideoUrl = awemeList[0]?.video?.play_addr?.url_list[0];
     if (!cleanVideoUrl) throw new Error('Gagal mengekstrak video tanpa watermark.');
 
     const videoStream = await axios({
