@@ -1,8 +1,6 @@
-import axios from 'axios';
-
 export async function GET(request) {
   const { searchParams } = new URL(request.url);
-  let targetUrl = searchParams.get('url');
+  const targetUrl = searchParams.get('url');
 
   if (!targetUrl) {
     return new Response(JSON.stringify({ error: 'Tautan video wajib diisi!' }), {
@@ -12,46 +10,29 @@ export async function GET(request) {
   }
 
   try {
-    if (targetUrl.includes('://tiktok.com') || targetUrl.includes('://tiktok.com')) {
-      const redirectRes = await axios.head(targetUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
-        maxRedirects: 5,
-      });
-      targetUrl = redirectRes.request.res.responseUrl || targetUrl;
-    }
-
-    const videoIdMatch = targetUrl.match(/\/video\/(\d+)/) || targetUrl.match(/\/v\/(\d+)/);
-    if (!videoIdMatch) throw new Error('Format link TikTok tidak dikenali. Gunakan link video yang valid.');
+    // Memanggil API publik pihak ketiga yang sangat stabil dan ramah link HP
+    const cleanUrl = targetUrl.split('?')[0];
+    const fetchApi = await fetch(`https://eu.org{encodeURIComponent(cleanUrl)}`);
     
-    const videoId = videoIdMatch[1];
-    const apiUrl = `https://tiktokv.com{videoId}`;
+    if (!fetchApi.ok) throw new Error('Server pemroses sedang sibuk.');
+    
+    const resData = await fetchApi.json();
+    const videoDownloadUrl = resData.video?.noWatermark || resData.video?.watermark;
 
-    const apiResponse = await axios.get(apiUrl, {
-      headers: { 'User-Agent': 'com.ss.android.ugc.trill/494+ (Linux; U; Android 12; en_US; OpenData)' }
-    });
+    if (!videoDownloadUrl) throw new Error('Gagal mengekstrak video tanpa watermark.');
 
-    const awemeList = apiResponse.data?.aweme_list;
-    if (!awemeList || awemeList.length === 0) throw new Error('Video tidak ditemukan atau berstatus privat.');
+    const videoStream = await fetch(videoDownloadUrl);
+    const videoBlob = await videoStream.blob();
 
-    const cleanVideoUrl = awemeList[0]?.video?.play_addr?.url_list[0];
-    if (!cleanVideoUrl) throw new Error('Gagal mengekstrak video tanpa watermark.');
-
-    const videoStream = await axios({
-      url: cleanVideoUrl,
-      method: 'GET',
-      responseType: 'stream',
-      headers: { 'User-Agent': 'Mozilla/5.0' }
-    });
-
-    return new Response(videoStream.data, {
+    return new Response(videoBlob, {
       headers: {
-        'Content-Disposition': `attachment; filename="TokClean-${videoId}.mp4"`,
+        'Content-Disposition': `attachment; filename="TokClean-${Date.now()}.mp4"`,
         'Content-Type': 'video/mp4',
       },
     });
 
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message || 'Server sibuk. Gagal memproses video.' }), {
+    return new Response(JSON.stringify({ error: error.message || 'Gagal memproses video.' }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' },
     });
