@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokClean.io - TikTok Downloader Premium</title>
+    <!-- Memanggil Tailwind CSS versi CDN yang instan & tanpa eror -->
+    <script src="https://tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col justify-between font-sans relative overflow-hidden">
+
+    <!-- Efek Cahaya Latar Belakang -->
+    <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-pink-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[120px] pointer-events-none"></div>
+
+    <!-- Header -->
+    <header className="py-5 px-6 max-w-5xl mx-auto w-full flex items-center justify-between border-b border-neutral-900/60 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto w-full flex items-center justify-between py-5 px-6">
+            <h1 class="text-2xl font-black bg-gradient-to-r from-cyan-400 via-pink-500 to-amber-400 bg-clip-text text-transparent tracking-wider">
+                TOKCLEAN.IO
+            </h1>
+            <span class="text-xs font-semibold bg-neutral-900 border border-neutral-800 text-cyan-400 px-3 py-1.5 rounded-full shadow-inner">
+                ⚡ Ultra Fast Engine v3
+            </span>
+        </div>
+    </header>
+
+    <!-- Konten Utama -->
+    <main class="flex-grow flex flex-col items-center justify-center px-4 max-w-3xl mx-auto w-full text-center py-16 relative z-10">
+        <div class="space-y-4 mb-10">
+            <h2 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                TikTok Video <br>
+                <span class="bg-gradient-to-r from-cyan-400 to-pink-500 bg-clip-text text-transparent">Tanpa Watermark</span>
+            </h2>
+            <p class="text-neutral-400 text-sm sm:text-base max-w-md mx-auto leading-relaxed">
+                Unduh video tanpa logo secara instan. Cukup tempel tautan, klik, dan simpan dengan kualitas HD terbaik.
+            </p>
+        </div>
+
+        <!-- Panel Box Utama -->
+        <div class="w-full bg-neutral-900/40 p-6 rounded-3xl border border-neutral-800/80 backdrop-blur-xl shadow-2xl">
+            <form id="downloadForm" class="flex flex-col gap-3">
+                <input
+                    id="inputUrl"
+                    type="url"
+                    required
+                    placeholder="Tempel tautan video TikTok di sini..."
+                    class="w-full bg-neutral-950/80 border border-neutral-800 px-5 py-4 text-sm text-neutral-200 outline-none rounded-2xl focus:border-cyan-500/50 transition-all placeholder:text-neutral-600"
+                />
+                <button
+                    type="submit"
+                    id="btnSubmit"
+                    class="w-full bg-gradient-to-r from-cyan-500 via-pink-500 to-rose-500 text-white font-bold text-sm py-4 rounded-2xl hover:opacity-95 active:scale-[0.99] transition-all tracking-wide shadow-xl shadow-pink-500/10 flex items-center justify-center gap-2"
+                >
+                    MULAI UNDUH INSTAN
+                </button>
+            </form>
+
+            <!-- Notifikasi Status & Eror -->
+            <div id="statusMessage" class="hidden mt-4 text-xs font-medium p-3 rounded-xl transition-all"></div>
+        </div>
+
+        <!-- Info Tambahan -->
+        <div class="grid grid-cols-3 gap-4 mt-8 w-full max-w-md text-center">
+            <div class="p-3 bg-neutral-900/20 rounded-xl border border-neutral-800"><p class="text-xs text-neutral-500">Kualitas</p><p class="text-sm font-bold text-neutral-300">HD / .MP4</p></div>
+            <div class="p-3 bg-neutral-900/20 rounded-xl border border-neutral-800"><p class="text-xs text-neutral-500">Kecepatan</p><p class="text-sm font-bold text-neutral-300">Tanpa Limit</p></div>
+            <div class="p-3 bg-neutral-900/20 rounded-xl border border-neutral-800"><p class="text-xs text-neutral-500">Kompatibel</p><p class="text-sm font-bold text-neutral-300">Semua HP</p></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="py-6 text-center text-xs text-neutral-600 border-t border-neutral-900/60">
+        &copy; 2026 TokClean Premium. Dibuat secara eksklusif untuk kemudahan berbagi konten.
+    </footer>
+
+    <!-- Logika Fungsi Pengunduh -->
+    <script>
+        document.getElementById('downloadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const inputUrl = document.getElementById('inputUrl').value;
+            const btnSubmit = document.getElementById('btnSubmit');
+            const statusMessage = document.getElementById('statusMessage');
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = 'Menghubungkan Server...';
+            statusMessage.classList.add('hidden');
+
+            try {
+                // Memakai API Publik eksternal yang super stabil & mendukung link pendek HP
+                const cleanUrl = inputUrl.split('?')[0];
+                const res = await fetch(`https://eu.org{encodeURIComponent(cleanUrl)}`);
+                const data = await res.json();
+                
+                const videoUrl = data.video?.noWatermark || data.video?.watermark;
+                if (!videoUrl) throw new Error('Gagal mengambil video tanpa watermark.');
+
+                // Proses download file video langsung ke galeri
+                const link = document.createElement('a');
+                link.href = videoUrl;
+                link.download = `TokClean-${Date.now()}.mp4`;
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                statusMessage.className = "mt-4 text-xs font-medium bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-3 rounded-xl block";
+                statusMessage.innerText = "✅ Sukses! Video berhasil dialihkan ke unduhan browser kamu.";
+
+            } catch (err) {
+                statusMessage.className = "mt-4 text-xs font-medium bg-rose-500/10 border border-rose-500/20 text-rose-400 p-3 rounded-xl block";
+                statusMessage.innerText = "🚨 Gagal mengunduh video. Pastikan tautan benar dan video tidak privat.";
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerText = 'MULAI UNDUH INSTAN';
+            }
+        });
+    </script>
+</body>
+</html>
